@@ -1,0 +1,13 @@
+target/
+dbt_packages/
+logs/
+.user.yml
+.env
+profiles.yml
+__pycache__/
+*.pyc
+lambda_package/
+lambda_package.zip
+*.pyd
+.DS_Store
+Thumbs.db

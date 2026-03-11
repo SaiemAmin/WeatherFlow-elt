@@ -1,0 +1,7 @@
+version: 2
+sources: 
+  - name: meteo_raw
+    database: awsdatacatalog
+    schema: meteo_raw
+    tables: 
+      - name: weather 

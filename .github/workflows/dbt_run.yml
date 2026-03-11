@@ -1,0 +1,43 @@
+name: dbt run
+
+on:
+  schedule:
+    - cron: '30 8 * * *'  # runs at 8:30am UTC daily
+  workflow_dispatch:        # allows manual trigger from GitHub UI
+
+jobs:
+  dbt-run:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+
+      - name: Install dbt
+        run: pip install dbt-athena-community
+
+      - name: Create profiles.yml
+        run: |
+          mkdir -p ~/.dbt
+          cat <<EOF > ~/.dbt/profiles.yml
+          meteo_elt:
+            target: dev
+            outputs:
+              dev:
+                type: athena
+                region_name: eu-north-1
+                s3_staging_dir: s3://meteo-elt-project/athena-results/
+                schema: meteo_curated
+                database: awsdatacatalog
+                aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+                aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          EOF
+
+      - name: Run dbt
+        working-directory: ./transformation/meteo_elt
+        run: dbt run
