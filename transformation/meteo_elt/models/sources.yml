@@ -1,7 +1,61 @@
 version: 2
+
 sources: 
   - name: meteo_raw
     database: awsdatacatalog
     schema: meteo_raw
     tables: 
-      - name: weather 
+      - name: weather
+        columns:
+          - name: latitude
+            tests:
+              - not_null
+          - name: longitude
+            tests:
+              - not_null
+          - name: hourly
+            tests:
+              - not_null
+
+models:
+  - name: stg_weather
+    description: "Flattened hourly weather data per city"
+    columns:
+      - name: city
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['new_york', 'los_angeles', 'chicago']
+      - name: hour_timestamp
+        tests:
+          - not_null
+      - name: temperature_c
+        tests:
+          - not_null
+      - name: humidity_pct
+        tests:
+          - not_null
+      - name: precipitation_mm
+        tests:
+          - not_null
+      - name: wind_speed_kmh
+        tests:
+          - not_null
+      - name: weather_code
+        tests:
+          - not_null
+
+  - name: mart_daily_weather
+    description: "Daily aggregated weather summary per city"
+    columns:
+      - name: city
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['new_york', 'los_angeles', 'chicago']
+      - name: avg_temp_c
+        tests:
+          - not_null
+      - name: total_precipitation_mm
+        tests:
+          - not_null
