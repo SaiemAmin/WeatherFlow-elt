@@ -40,4 +40,6 @@ jobs:
 
       - name: Run dbt
         working-directory: ./transformation/meteo_elt
-        run: dbt run
+        run: |
+          dbt run
+          dbt test #runs every test against my athena for data quality checks defined in sources.yml
