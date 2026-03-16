@@ -8,7 +8,7 @@ A fully automated, serverless ELT pipeline on AWS that ingests daily historical 
 
 Built with Power BI Desktop connected to AWS Athena via ODBC. Displays daily weather metrics for New York, Los Angeles, and Chicago with interactive city and date range filters.
 
-![WeatherFlow Dashboard](assets/dashboard.png)
+![WeatherFlow Dashboard](dashboard.png)
 
 ---
 
