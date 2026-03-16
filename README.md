@@ -1,12 +1,12 @@
 # WeatherFlow — Serverless ELT Weather Pipeline 🌤️
 
-A fully automated, serverless ELT pipeline on AWS that ingests daily historical weather data for 3 US cities, transforms it into analytics-ready tables, and visualizes it in a Power BI dashboard — running daily without manual intervention.
+A fully automated, serverless ELT pipeline on AWS that ingests daily historical weather data for 3 US sttes, transforms it into analytics-ready tables, and visualizes it in a Power BI dashboard — running daily without manual intervention.
 
 ---
 
 ## Dashboard
 
-Built with Power BI Desktop connected to AWS Athena via ODBC. Displays daily weather metrics for New York, Los Angeles, and Chicago with interactive city and date range filters.
+Built with Power BI Desktop connected to AWS Athena via ODBC. Displays daily weather metrics for New York, Los Angeles, and Chicago with interactive state and date range filters.
 
 ![WeatherFlow Dashboard](dashboard.png)
 
@@ -20,7 +20,7 @@ Open-Meteo API (free, no key needed)
 AWS Lambda (ingestion script)
         ↓
 Amazon S3 (raw data lake)
-  raw/weather/city=new_york/year=2026/month=03/day=11/data.json
+  raw/weather/state=new_york/year=2026/month=03/day=11/data.json
         ↓
 AWS Glue Crawler (schema detection)
         ↓
@@ -30,7 +30,7 @@ Amazon Athena (queryable raw tables)
         ↓
 dbt Core (transformation)
   staging layer → flattens nested JSON arrays
-  curated layer → daily aggregations per city
+  curated layer → daily aggregations per state
         ↓
 Amazon Athena (clean analytics-ready tables)
 ```
@@ -91,12 +91,12 @@ meteo-elt-project/
 ## Data Flow
 
 ### Extract
-Python script calls the [Open-Meteo Archive API](https://open-meteo.com/) — free, no API key required. Fetches yesterday's completed historical data for 3 US cities:
+Python script calls the [Open-Meteo Archive API](https://open-meteo.com/) — free, no API key required. Fetches yesterday's completed historical data for 3 US states:
 - New York
 - Los Angeles
 - Chicago
 
-### Variables pulled per city:
+### Variables pulled per state:
 | Variable | Description |
 |---|---|
 | `temperature_2m` | Air temperature at 2m height (°C) |
@@ -109,8 +109,8 @@ Python script calls the [Open-Meteo Archive API](https://open-meteo.com/) — fr
 Raw JSON landed into S3 with Hive-style partitioning:
 ```
 s3://meteo-elt-project/raw/weather/
-  city=new_york/year=2026/month=03/day=11/data.json
-  city=chicago/year=2026/month=03/day=11/data.json
+  state=new_york/year=2026/month=03/day=11/data.json
+  state=chicago/year=2026/month=03/day=11/data.json
   ...
 ```
 
@@ -118,11 +118,11 @@ s3://meteo-elt-project/raw/weather/
 
 **Staging layer** (`stg.stg_weather`):
 - Unnests hourly arrays using `CROSS JOIN UNNEST(sequence(1, 24))`
-- Flattens 3 nested city rows → 72 flat rows (1 per city per hour)
+- Flattens 3 nested state rows → 72 flat rows (1 per state per hour)
 - Renames columns for readability
 
 **Curated layer** (`curated.mart_daily_weather`):
-- Aggregates hourly data into daily summaries per city
+- Aggregates hourly data into daily summaries per state
 - Columns: `avg_temp_c`, `max_temp_c`, `min_temp_c`, `avg_humidity_pct`, `total_precipitation_mm`, `avg_wind_speed_kmh`
 
 ---
@@ -198,35 +198,35 @@ AWS_SECRET_ACCESS_KEY
 
 ## Sample Analytics Queries
 
-**Which city was warmest on average?**
+**Which state was warmest on average?**
 ```sql
-SELECT city, avg_temp_c
+SELECT state, avg_temp_c
 FROM curated.mart_daily_weather
 ORDER BY avg_temp_c DESC;
 ```
 
-**Total rainfall per city this month?**
+**Total rainfall per state this month?**
 ```sql
-SELECT city, SUM(total_precipitation_mm) AS monthly_precip
+SELECT state, SUM(total_precipitation_mm) AS monthly_precip
 FROM curated.mart_daily_weather
 WHERE year = '2026' AND month = '03'
-GROUP BY city
+GROUP BY state
 ORDER BY monthly_precip DESC;
 ```
 
 **Coldest day recorded?**
 ```sql
-SELECT city, year, month, day, min_temp_c
+SELECT state, year, month, day, min_temp_c
 FROM curated.mart_daily_weather
 ORDER BY min_temp_c ASC
 LIMIT 1;
 ```
 
-**Windiest city on average?**
+**Windiest state on average?**
 ```sql
-SELECT city, ROUND(AVG(avg_wind_speed_kmh), 2) AS avg_wind
+SELECT state, ROUND(AVG(avg_wind_speed_kmh), 2) AS avg_wind
 FROM curated.mart_daily_weather
-GROUP BY city
+GROUP BY state
 ORDER BY avg_wind DESC;
 ```
 
