@@ -1,6 +1,6 @@
 # WeatherFlow — Serverless ELT Weather Pipeline 🌤️
 
-A fully automated, serverless ELT pipeline on AWS that ingests daily historical weather data for 3 US cities, transforms it into analytics-ready tables via Apache Airflow orchestration, and visualizes it in a Power BI dashboard — running daily without manual intervention.
+A fully automated, serverless ELT pipeline on AWS that ingests daily historical weather data for 3 US cities, transforms it into analytics-ready tables via Apache Airflow orchestration on EC2 t3.medium instance, and visualizes it in a Power BI dashboard — running daily without manual intervention.
 
 ---
 
